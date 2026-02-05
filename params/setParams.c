@@ -1,14 +1,18 @@
 #include <fcntl.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-int set_module_param(const char *module, const char *param, const char *value) {
+#define MODULE_NAME "hello"
+#define SYSFS_BASE "/sys/module/" MODULE_NAME "/parameters/"
+
+static int write_param(const char *param, const char *value) {
   char path[256];
   int fd, ret;
 
-  snprintf(path, sizeof(path), "/sys/module/%s/parameters/%s", module, param);
+  snprintf(path, sizeof(path), SYSFS_BASE "%s", param);
 
   fd = open(path, O_WRONLY);
   if (fd < 0) {
@@ -28,16 +32,46 @@ int set_module_param(const char *module, const char *param, const char *value) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 4) {
-    fprintf(stderr, "Usage: %s <module> <param> <value>\n", argv[0]);
+  int opt;
+  char *output_file = NULL;
+  char *time_sec = NULL;
+
+  while ((opt = getopt(argc, argv, "o:t:")) != -1) {
+    switch (opt) {
+    case 'o':
+      output_file = optarg;
+      break;
+    case 't':
+      time_sec = optarg;
+      break;
+    default:
+      fprintf(stderr, "Usage: %s [-o output_file] [-t time_in_seconds]\n",
+              argv[0]);
+      return 1;
+    }
+  }
+
+  if (!output_file && !time_sec) {
+    fprintf(stderr, "Usage: %s [-o output_file] [-t time_in_seconds]\n",
+            argv[0]);
     return 1;
   }
 
-  if (set_module_param(argv[1], argv[2], argv[3]) < 0) {
-    fprintf(stderr, "Failed to set parameter\n");
-    return 1;
+  if (output_file) {
+    if (write_param("g_filename", output_file) < 0) {
+      fprintf(stderr, "Failed to set output file\n");
+      return 1;
+    }
+    printf("Output file set to '%s'\n", output_file);
   }
 
-  printf("Parameter %s set to '%s' successfully\n", argv[2], argv[3]);
+  if (time_sec) {
+    if (write_param("g_timerPeriodMs", time_sec) < 0) {
+      fprintf(stderr, "Failed to set timer period\n");
+      return 1;
+    }
+    printf("Timer period set to %s seconds\n", time_sec);
+  }
+
   return 0;
 }

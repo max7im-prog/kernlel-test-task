@@ -1,19 +1,15 @@
-MODULE_NAME=hello
+all:
+	$(MAKE) -C module
+	$(MAKE) -C params
 
-obj-m += module/$(MODULE_NAME).o   
-   
-PWD := $(CURDIR)  
-   
-all: build
+clean:
+	$(MAKE) -C module clean
+	$(MAKE) -C params clean
 
-build:  
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-  
-clean: 
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+load:
+	$(MAKE) -C module load
 
-load: build
-	sudo insmod module/$(MODULE_NAME).ko
+unload:
+	$(MAKE) -C module unload
 
-unload: 
-	sudo rmmod $(MODULE_NAME)
+.PHONY: all clean load unload

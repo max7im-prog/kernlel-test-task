@@ -12,3 +12,4 @@ compile_commands.json
 *.cmd
 modules.order
 Module.symvers
+params/setParams
