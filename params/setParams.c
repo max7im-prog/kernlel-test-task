@@ -34,7 +34,7 @@ static int write_param(const char *param, const char *value) {
 int main(int argc, char **argv) {
   int opt;
   char *output_file = NULL;
-  char *time_sec = NULL;
+  char *time_sec_str = NULL;
 
   while ((opt = getopt(argc, argv, "o:t:")) != -1) {
     switch (opt) {
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
       output_file = optarg;
       break;
     case 't':
-      time_sec = optarg;
+      time_sec_str = optarg;
       break;
     default:
       fprintf(stderr, "Usage: %s [-o output_file] [-t time_in_seconds]\n",
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (!output_file && !time_sec) {
+  if (!output_file && !time_sec_str) {
     fprintf(stderr, "Usage: %s [-o output_file] [-t time_in_seconds]\n",
             argv[0]);
     return 1;
@@ -65,12 +65,22 @@ int main(int argc, char **argv) {
     printf("Output file set to '%s'\n", output_file);
   }
 
-  if (time_sec) {
-    if (write_param("g_timerPeriodMs", time_sec) < 0) {
+  if (time_sec_str) {
+    // Convert seconds to milliseconds
+    long time_sec = strtol(time_sec_str, NULL, 10);
+    if (time_sec <= 0) {
+      fprintf(stderr, "Invalid time value: %s\n", time_sec_str);
+      return 1;
+    }
+
+    char time_ms[32];
+    snprintf(time_ms, sizeof(time_ms), "%ld", time_sec * 1000);
+
+    if (write_param("g_timerPeriodMs", time_ms) < 0) {
       fprintf(stderr, "Failed to set timer period\n");
       return 1;
     }
-    printf("Timer period set to %s seconds\n", time_sec);
+    printf("Timer period set to %ld seconds (%s ms)\n", time_sec, time_ms);
   }
 
   return 0;
