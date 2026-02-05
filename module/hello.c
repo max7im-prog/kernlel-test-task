@@ -20,11 +20,11 @@ MODULE_DESCRIPTION("Hello world printer");
 
 /* Module parameters */
 static unsigned int g_timerPeriodMs = 1000;
-module_param(g_timerPeriodMs, uint, 0);
+module_param(g_timerPeriodMs, uint, 0644);
 MODULE_PARM_DESC(g_timerPeriodMs, "Period in ms between runs");
 
 static char *g_filename = "output.txt";
-module_param(g_filename, charp, 0);
+module_param(g_filename, charp, 0644);
 MODULE_PARM_DESC(g_filename,
                  "A name of a file in output directory to store logs");
 
