@@ -10,6 +10,7 @@ clean:
 	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD)  clean
 
 load: all
+	sudo mkdir /var/tmp/test_module
 	sudo insmod ./$(MODULE_NAME).ko
 
 unload:
